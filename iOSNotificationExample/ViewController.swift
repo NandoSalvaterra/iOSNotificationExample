@@ -36,6 +36,9 @@ class ViewController: UIViewController {
     
     func scheduleNotification(inSeconds: TimeInterval, completion: @escaping (_ success: Bool) -> Void) {
         let notificationContent = UNMutableNotificationContent()
+        
+        //Only for Extension
+        notificationContent.categoryIdentifier = "notificationCategory"
         notificationContent.title = "Title"
         notificationContent.subtitle = "Subtitle"
         notificationContent.body = "This is the body of a notification"
