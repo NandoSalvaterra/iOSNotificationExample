@@ -27,5 +27,13 @@ class NotificationViewController: UIViewController, UNNotificationContentExtensi
             imageView.image = UIImage(data: imageData)
         }
     }
+    func didReceive(_ response: UNNotificationResponse, completionHandler completion: @escaping (UNNotificationContentExtensionResponseOption) -> Void) {
+        if response.actionIdentifier == "favoriteAction" {
+            //Do your custom actions here
+            completion(.dismissAndForwardAction)
+        } else {
+            completion(.dismissAndForwardAction)
+        }
+    }
 
 }

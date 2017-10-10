@@ -9,21 +9,22 @@
 import UIKit
 import UserNotifications
 
-class ViewController: UIViewController {
-
+class ViewController: UIViewController, UNUserNotificationCenterDelegate {
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { (granted, error) in
             if granted {
                 print("Notification Access Granted")
+                UNUserNotificationCenter.current().delegate = self
+                self.configureNotification()
             } else {
-                print(error?.localizedDescription)
+                print(error?.localizedDescription ?? "Access Denied!")
             }
         }
-        
     }
     
-    @IBAction func buttonTaped(sender: UIButton) {
+    @IBAction func sendNotificationButtonDidPressed(sender: UIButton) {
         scheduleNotification(inSeconds: 5) { success in
             if success {
                 print("Successfully scheduled notification")
@@ -32,13 +33,14 @@ class ViewController: UIViewController {
             }
         }
     }
-
     
     func scheduleNotification(inSeconds: TimeInterval, completion: @escaping (_ success: Bool) -> Void) {
+        
         let notificationContent = UNMutableNotificationContent()
         
-        //Only for Extension
-        notificationContent.categoryIdentifier = "notificationCategory"
+        //Uncomment the line below if you want to see how the Notification Content Extension in action.
+        //notificationContent.categoryIdentifier = "notificationCategory"
+        
         notificationContent.title = "Title"
         notificationContent.subtitle = "Subtitle"
         notificationContent.body = "This is the body of a notification"
@@ -50,14 +52,35 @@ class ViewController: UIViewController {
         let notificationTrigger = UNTimeIntervalNotificationTrigger(timeInterval: inSeconds, repeats: false)
         
         let notificationRequest = UNNotificationRequest(identifier: "notification", content: notificationContent, trigger: notificationTrigger)
+        
         UNUserNotificationCenter.current().add(notificationRequest) { (error) in
             if error != nil {
-                print(error?.localizedDescription)
+                print(error?.localizedDescription ?? "Error adding a notification")
                 completion(false)
             } else {
                 completion(true)
             }
         }
     }
+    
+    private func configureNotification() {
+       
+        let favoriteAction  = UNNotificationAction(identifier: "favoriteAction", title: "Favorite", options: [])
+        let dismissAction = UNNotificationAction(identifier: "dismissAction", title: "Dismiss", options: [])
+        let category = UNNotificationCategory(identifier: "notificationCategory", actions: [favoriteAction, dismissAction], intentIdentifiers: [], options: [])
+        
+        UNUserNotificationCenter.current().setNotificationCategories([category])
+    }
+    
+    //MARK: - UNUserNotificationCenterDelegate Methods
+    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        completionHandler(.alert)
+    }
+    
+    func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
+        print("Response receive for \(response.actionIdentifier)")
+        completionHandler()
+    }
+    
 }
 
